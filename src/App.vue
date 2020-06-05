@@ -67,7 +67,7 @@
           </li>
         </ul>
     </div>
-   
+    <loading :active.sync="isLoading"></loading>
   </div>
 </template>
 
@@ -129,6 +129,7 @@ export default {
   name:'app',
   data(){
     return{
+      isLoading:true,
       data:[],
       pharmacyData:{},
       cityName,
@@ -146,6 +147,7 @@ export default {
   },
   methods:{
     updateMap(){
+      this.isLoading = true
       this.removeMarker()
       const pharmacies = this.data.filter((pharmacy)=>{
         return pharmacy.properties.county === this.select.city
@@ -164,6 +166,7 @@ export default {
         })
         this.pharmacyData = AreaData
         this.panTo(AreaData[0])
+        this.isLoading = false
       }else{
         //只用縣市所跑的資料
         pharmacies.forEach((p)=>{
@@ -173,6 +176,7 @@ export default {
         })
         this.pharmacyData = pharmacies
         this.panTo(pharmacies[0])
+        this.isLoading = false
       }
     },
     removeMarker() {
@@ -218,12 +222,17 @@ export default {
   },
   mounted(){
     const url = 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'
+    this.isLoading = true
     axios.get(url)
     .then((res)=>{
       this.data = res.data.features
       this.updateMap()
+      this.isLoading = false
     })
-    .catch((error)=>{console.log(error)})
+    .catch((error)=>{
+      console.log(error)
+      this.isLoading = false
+    })
 
     osmMap = L.map('map', {
       center: [25.03, 121.55],
